@@ -22,9 +22,45 @@ namespace board
             return pieces[row, column];
         }
 
+        public Piece getPiece(Position position)
+        {
+            return pieces[position.row, position.column];
+        }
+
+        public bool thereIsAPiece(Position position)
+        {
+            validatePosition(position);
+            return getPiece(position) != null;
+        }
+
         public void placePiece(Piece piece, Position position)
         {
+
+            if (thereIsAPiece(position))
+            {
+                throw new BoardException("There is already a piece in this position!");
+            }
+
+
             pieces[position.row, position.column] = piece;
+        }
+
+        public bool positionExists(Position position)
+        {
+            if (position.row < 0 || position.row >= rows || position.column < 0 || position.column >= columns)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public bool validatePosition(Position position)
+        {
+            if (!positionExists(position))
+            {
+                throw new BoardException("Invalid position!");
+            }
+            return true;
         }
     }
 }
