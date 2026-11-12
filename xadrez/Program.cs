@@ -5,23 +5,14 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        try
-        {
-            Board board = new Board(8, 8);
-            board.placePiece(new Rook(board, Color.White), new Position(0, 0));
-            board.placePiece(new Rook(board, Color.White), new Position(1, 3));
-            board.placePiece(new Rook(board, Color.White), new Position(0, 0));
-            board.placePiece(new Rook(board, Color.White), new Position(0, 0));
-            Screen.PrintBoard(board);
+        ChessPosition pos = new ChessPosition('c', 7);
 
-            Screen.PrintBoard(board);
+        Console.WriteLine(pos);
 
-            Console.ReadLine();
-        }
-        catch (BoardException e)
-        {
-            Console.WriteLine(e.Message);
-        }
+        Console.WriteLine(pos.toPosition());
+
+        Console.ReadLine();
+        
         
 
 
