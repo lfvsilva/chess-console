@@ -5,11 +5,15 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        ChessPosition pos = new ChessPosition('c', 7);
+        Board board = new Board(8, 8);
 
-        Console.WriteLine(pos);
+        board.placePiece(new Rook(board, Color.White), new Position(0, 0));
+        board.placePiece(new Rook(board, Color.White), new Position(1, 3));
+        board.placePiece(new Rook(board, Color.White), new Position(0, 2));
 
-        Console.WriteLine(pos.toPosition());
+        board.placePiece(new Rook(board, Color.Black), new Position(3, 5));
+
+        Screen.printBoard(board);
 
         Console.ReadLine();
         
