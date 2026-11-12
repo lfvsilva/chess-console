@@ -10,13 +10,13 @@ namespace xadrez
             {
                 for (int j = 0; j < board.columns; j++)
                 {
-                    if (board.GetPiece(i, j) == null)
+                    if (board.getPiece(i, j) == null)
                     {
                         Console.Write("- ");
                     }
                     else
                     {
-                        Console.Write(board.GetPiece(i, j) + " ");
+                        Console.Write(board.getPiece(i, j) + " ");
                     }
                 }
                 Console.WriteLine();

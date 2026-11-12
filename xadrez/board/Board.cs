@@ -17,9 +17,14 @@ namespace board
             pieces = new Piece[rows, columns];
         }
 
-        public Piece GetPiece(int row, int column)
+        public Piece getPiece(int row, int column)
         {
             return pieces[row, column];
+        }
+
+        public void placePiece(Piece piece, Position position)
+        {
+            pieces[position.row, position.column] = piece;
         }
     }
 }
