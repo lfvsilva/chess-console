@@ -16,5 +16,10 @@ namespace board
             this.columns = columns;
             pieces = new Piece[rows, columns];
         }
+
+        public Piece GetPiece(int row, int column)
+        {
+            return pieces[row, column];
+        }
     }
 }
