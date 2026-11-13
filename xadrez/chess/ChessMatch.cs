@@ -136,8 +136,19 @@ namespace chess
             }
         }
 
-        public void ExecutePlay(Position origin, Position destination)
+        // 'promotionPiece' is only used when the move is a promotion:
+        // Q = Queen (default), R = Rook, B = Bishop, N = Knight.
+        public void ExecutePlay(Position origin, Position destination, char promotionPiece = 'Q')
         {
+            bool isPromotion = isPromotionMove(origin, destination);
+            promotionPiece = char.ToUpperInvariant(promotionPiece);
+            // Validate the choice BEFORE moving anything, so an invalid choice
+            // leaves the board untouched.
+            if (isPromotion && !isValidPromotionChoice(promotionPiece))
+            {
+                throw new BoardException("Invalid promotion piece! Choose Q, R, B or N.");
+            }
+
             Piece capturedPiece = executeMove(origin, destination);
 
             if (isInCheck(currentPlayer))
@@ -149,16 +160,19 @@ namespace chess
             Piece p = board.getPiece(destination);
 
             // # special move promotion
-            if(p is Pawn)
+            // Done before evaluating check/checkmate/stalemate, so they consider the
+            // new piece (e.g. promoting to a knight may give check where a queen wouldn't).
+            if (isPromotion)
             {
-                if ((p.color == Color.White && destination.row == 0) || (p.color == Color.Black && destination.row == 7))
-                {
-                    p = board.removePiece(destination);
-                    pieces.Remove(p);
-                    Piece queen = new Queen(board, p.color);
-                    board.placePiece(queen, destination);
-                    pieces.Add(queen);
-                }
+                Piece pawn = board.removePiece(destination);
+                pieces.Remove(pawn);
+                Piece promoted = createPromotedPiece(promotionPiece, pawn.color);
+                // The promoted piece counts as already moved: a promoted rook
+                // must never be allowed to castle.
+                promoted.increaseMoveCount();
+                board.placePiece(promoted, destination);
+                pieces.Add(promoted);
+                p = promoted;
             }
             // # special move en passant
             // Must be updated BEFORE evaluating the opponent's replies, so that an
@@ -184,6 +198,37 @@ namespace chess
             {
                 turn++;
                 changePlayer();
+            }
+        }
+
+        // True when moving the piece at 'origin' to 'destination' is a pawn reaching
+        // the last rank. Lets the UI ask for the promotion piece before the move.
+        public bool isPromotionMove(Position origin, Position destination)
+        {
+            Piece p = board.getPiece(origin);
+            if (p is not Pawn)
+            {
+                return false;
+            }
+            return (p.color == Color.White && destination.row == 0)
+                || (p.color == Color.Black && destination.row == board.rows - 1);
+        }
+
+        // A pawn may become a Queen, Rook, Bishop or Knight (never a King or a Pawn).
+        public static bool isValidPromotionChoice(char piece)
+        {
+            return "QRBN".IndexOf(char.ToUpperInvariant(piece)) >= 0;
+        }
+
+        private Piece createPromotedPiece(char piece, Color color)
+        {
+            switch (char.ToUpperInvariant(piece))
+            {
+                case 'Q': return new Queen(board, color);
+                case 'R': return new Rook(board, color);
+                case 'B': return new Bishop(board, color);
+                case 'N': return new Knight(board, color);
+                default: throw new BoardException("Invalid promotion piece! Choose Q, R, B or N.");
             }
         }
 

@@ -141,6 +141,30 @@ namespace xadrez
             }
             Console.BackgroundColor = originalBackground;
         }
+        // Asks until a valid piece is typed. Pressing Enter keeps the default (Queen).
+        public static char readPromotionPiece()
+        {
+            while (true)
+            {
+                Console.Write("Promote to (Q = Queen, R = Rook, B = Bishop, N = Knight) [Q]: ");
+                string? s = Console.ReadLine();
+                if (s == null)
+                {
+                    return 'Q';
+                }
+                s = s.Trim().ToUpperInvariant();
+                if (s.Length == 0)
+                {
+                    return 'Q';
+                }
+                if (s.Length == 1 && ChessMatch.isValidPromotionChoice(s[0]))
+                {
+                    return s[0];
+                }
+                Console.WriteLine("Invalid choice! Type Q, R, B or N.");
+            }
+        }
+
         public static ChessPosition readChessPosition()
         {
             string? s = Console.ReadLine();
