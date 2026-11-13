@@ -43,6 +43,7 @@ namespace board
 
 
             pieces[position.row, position.column] = piece;
+            piece.position = position;
         }
 
         public Piece removePiece(Position position)

@@ -21,7 +21,12 @@ internal class Program
                     Console.Write("Origin: ");
                     Position origin = Screen.readChessPosition().toPosition();
 
-                    
+                    bool[,] possibleMoves = match.board.getPiece(origin).possibleMoves();
+
+                    Console.Clear();
+                    Screen.printBoard(match.board, possibleMoves);
+
+                    Console.WriteLine();
                     Console.Write("Destination: ");
                     Position destination = Screen.readChessPosition().toPosition();
 
