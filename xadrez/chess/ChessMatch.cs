@@ -16,6 +16,7 @@ namespace chess
         private HashSet<Piece> pieces;
         private HashSet<Piece> capturedPieces;
         public bool check { get; private set; }
+        public bool stalemate { get; private set; }
         public Piece vulnerableEnPassant { get; private set; }
 
         public ChessMatch()
@@ -159,24 +160,9 @@ namespace chess
                     pieces.Add(queen);
                 }
             }
-            if (isInCheck(opponent(currentPlayer)))
-            {
-                check = true;
-            }
-            else
-            {
-                check = false;
-            }
-            if (isCheckMate(opponent(currentPlayer)))
-            {
-                finished = true;
-            }
-            else
-            {
-                turn++;
-                changePlayer();
-            }
             // # special move en passant
+            // Must be updated BEFORE evaluating the opponent's replies, so that an
+            // en passant capture is considered when looking for checkmate/stalemate.
             if (p is Pawn && (destination.row == origin.row -2 || destination.row == origin.row + 2))
             {
                 vulnerableEnPassant = p;
@@ -185,10 +171,25 @@ namespace chess
             {
                 vulnerableEnPassant = null;
             }
+
+            Color nextPlayer = opponent(currentPlayer);
+            check = isInCheck(nextPlayer);
+            if (!hasAnyLegalMove(nextPlayer))
+            {
+                // No legal moves: checkmate if in check, otherwise stalemate (draw).
+                finished = true;
+                stalemate = !check;
+            }
+            else
+            {
+                turn++;
+                changePlayer();
+            }
         }
 
         public void validateOriginPosition(Position pos)
         {
+            board.validatePosition(pos);
             if (board.getPiece(pos) == null)
             {
                 throw new BoardException("There is no piece in this position!");
@@ -197,7 +198,7 @@ namespace chess
             {
                 throw new BoardException("The chosen piece is not yours!");
             }
-            if (!board.getPiece(pos).isThereAnyPossibleMove())
+            if (!anyTrue(legalMoves(pos)))
             {
                 throw new BoardException("There are no possible moves for the chosen piece!");
             }
@@ -205,7 +206,8 @@ namespace chess
 
         public void validateDestinationPosition(Position origin, Position destination)
         {
-            if (!board.getPiece(origin).possibleMove(destination))
+            board.validatePosition(destination);
+            if (!legalMoves(origin)[destination.row, destination.column])
             {
                 throw new BoardException("Invalid destination position!");
             }
@@ -243,7 +245,7 @@ namespace chess
             return aux;
         }
 
-        private Color opponent(Color color)
+        public Color opponent(Color color)
         {
             return (color == Color.White) ? Color.Black : Color.White;
         }
@@ -267,10 +269,66 @@ namespace chess
             {
                 throw new BoardException($"There is no {color} king on the board!");
             }
-            foreach (Piece x in piecesInGameByColor(opponent(color)))
+            return isSquareAttacked(K.position, opponent(color));
+        }
+
+        // True if any piece of 'byColor' attacks 'pos'. Uses attackedSquares(), which
+        // excludes castling (avoids infinite recursion) and includes empty pawn diagonals.
+        public bool isSquareAttacked(Position pos, Color byColor)
+        {
+            foreach (Piece x in piecesInGameByColor(byColor))
             {
-                bool[,] mat = x.possibleMoves();
-                if (mat[K.position.row, K.position.column])
+                if (x.attackedSquares()[pos.row, pos.column])
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Pseudo-legal moves of the piece at 'origin', minus those that would leave
+        // its own king in check.
+        public bool[,] legalMoves(Position origin)
+        {
+            Piece piece = board.getPiece(origin);
+            bool[,] mat = piece.possibleMoves();
+            for (int i = 0; i < board.rows; i++)
+            {
+                for (int j = 0; j < board.columns; j++)
+                {
+                    if (mat[i, j])
+                    {
+                        Position destination = new Position(i, j);
+                        Piece capturedPiece = executeMove(origin, destination);
+                        bool leavesKingInCheck = isInCheck(piece.color);
+                        UndoMove(origin, destination, capturedPiece);
+                        if (leavesKingInCheck)
+                        {
+                            mat[i, j] = false;
+                        }
+                    }
+                }
+            }
+            return mat;
+        }
+
+        public bool hasAnyLegalMove(Color color)
+        {
+            foreach (Piece x in piecesInGameByColor(color))
+            {
+                if (anyTrue(legalMoves(x.position)))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static bool anyTrue(bool[,] mat)
+        {
+            foreach (bool b in mat)
+            {
+                if (b)
                 {
                     return true;
                 }
@@ -280,33 +338,12 @@ namespace chess
 
         public bool isCheckMate(Color color)
         {
-            if (!isInCheck(color))
-            {
-                return false;
-            }
-            foreach (Piece x in piecesInGameByColor(color))
-            {
-                bool[,] mat = x.possibleMoves();
-                for (int i = 0; i < board.rows; i++)
-                {
-                    for (int j = 0; j < board.columns; j++)
-                    {
-                        if (mat[i, j])
-                        {
-                           Position origin = x.position;
-                            Position destination = new Position(i, j);
-                            Piece capturedPiece = executeMove(origin, destination);
-                            bool testCheck = isInCheck(color);
-                            UndoMove(origin, destination, capturedPiece);
-                            if (!testCheck)
-                            {
-                                return false;
-                            }
-                        }
-                    }
-                }
-            }
-            return true;
+            return isInCheck(color) && !hasAnyLegalMove(color);
+        }
+
+        public bool isStalemate(Color color)
+        {
+            return !isInCheck(color) && !hasAnyLegalMove(color);
         }
 
         public void placeNewPiece(char column, int row, Piece piece)

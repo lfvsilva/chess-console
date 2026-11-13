@@ -22,7 +22,7 @@ internal class Program
                     Position origin = Screen.readChessPosition().toPosition();
                     match.validateOriginPosition(origin);
 
-                    bool[,] possibleMoves = match.board.getPiece(origin).possibleMoves();
+                    bool[,] possibleMoves = match.legalMoves(origin);
 
                     Console.Clear();
                     Screen.printBoard(match.board, possibleMoves);

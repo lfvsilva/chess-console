@@ -49,5 +49,12 @@ namespace board
         }
 
         public abstract bool[,] possibleMoves();
+
+        // Squares this piece attacks (used for check and castling-through-check tests).
+        // By default it is the same as possibleMoves(); King and Pawn override it.
+        public virtual bool[,] attackedSquares()
+        {
+            return possibleMoves();
+        }
     }
 }

@@ -27,7 +27,52 @@ namespace chess
             Piece p = board.getPiece(pos);
             return p != null && p is Rook && p.color == color && p.moveCount == 0;
         }
+        // A king never attacks via castling, so castling is left out here.
+        // This also prevents infinite recursion between the two kings.
+        public override bool[,] attackedSquares()
+        {
+            return basicMoves();
+        }
+
         public override bool[,] possibleMoves()
+        {
+            bool[,] mat = basicMoves();
+            Color enemy = chessMatch.opponent(color);
+            // #specialMove Castling
+            // The king cannot castle out of check, nor through an attacked square.
+            // (The destination square is checked by ChessMatch.legalMoves.)
+            if (moveCount == 0 && !chessMatch.isSquareAttacked(position, enemy))
+            {
+                // #specialMove Castling Kingside Rook
+                Position posT1 = new Position(position.row, position.column + 3);
+                if (testRookCastling(posT1))
+                {
+                    Position p1 = new Position(position.row, position.column + 1);
+                    Position p2 = new Position(position.row, position.column + 2);
+                    if (board.getPiece(p1) == null && board.getPiece(p2) == null
+                        && !chessMatch.isSquareAttacked(p1, enemy))
+                    {
+                        mat[position.row, position.column + 2] = true;
+                    }
+                }
+                // #specialMove Castling Queenside Rook
+                Position posT2 = new Position(position.row, position.column - 4);
+                if (testRookCastling(posT2))
+                {
+                    Position p1 = new Position(position.row, position.column - 1);
+                    Position p2 = new Position(position.row, position.column - 2);
+                    Position p3 = new Position(position.row, position.column - 3);
+                    if (board.getPiece(p1) == null && board.getPiece(p2) == null && board.getPiece(p3) == null
+                        && !chessMatch.isSquareAttacked(p1, enemy))
+                    {
+                        mat[position.row, position.column - 2] = true;
+                    }
+                }
+            }
+            return mat;
+        }
+
+        private bool[,] basicMoves()
         {
             bool[,] mat = new bool[board.rows, board.columns];
             Position pos = new Position(0, 0);
@@ -79,35 +124,6 @@ namespace chess
             {
                 mat[pos.row, pos.column] = true;
             }
-            // #specialMove Castling
-            if(moveCount == 0 && !chessMatch.check)
-            {
-                // #specialMove Castling Kingside Rook
-                Position posT1 = new Position(position.row, position.column + 3);
-                if (testRookCastling(posT1))
-                {
-                    Position p1 = new Position(position.row, position.column + 1);
-                    Position p2 = new Position(position.row, position.column + 2);
-                    if (board.getPiece(p1) == null && board.getPiece(p2) == null)
-                    {
-                        mat[position.row, position.column + 2] = true;
-                    }
-                }
-                // #specialMove Castling Queenside Rook
-                Position posT2 = new Position(position.row, position.column - 4);
-                if (testRookCastling(posT2))
-                {
-                    Position p1 = new Position(position.row, position.column - 1);
-                    Position p2 = new Position(position.row, position.column - 2);
-                    Position p3 = new Position(position.row, position.column - 3);
-                    if (board.getPiece(p1) == null && board.getPiece(p2) == null && board.getPiece(p3) == null)
-                    {
-                        mat[position.row, position.column - 2] = true;
-                    }
-                }
-            }
-
-
             return mat;
         }
     }

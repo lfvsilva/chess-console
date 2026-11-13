@@ -23,6 +23,11 @@ namespace xadrez
                 }
                 Console.WriteLine($"Waiting for player: {match.currentPlayer}");
             }
+            else if (match.stalemate)
+            {
+                Console.WriteLine("STALEMATE!");
+                Console.WriteLine($"Draw: {match.opponent(match.currentPlayer)} has no legal moves.");
+            }
             else
             {
                 Console.WriteLine("CHECKMATE!");
@@ -138,10 +143,12 @@ namespace xadrez
         }
         public static ChessPosition readChessPosition()
         {
-            string s = Console.ReadLine();
-            char column = s[0];
-            int row = int.Parse(s[1] + "");
-            return new ChessPosition(column, row);
+            string? s = Console.ReadLine();
+            if (!ChessPosition.TryParse(s, out ChessPosition? position))
+            {
+                throw new BoardException("Invalid position! Type a column a-h followed by a row 1-8 (e.g. e2).");
+            }
+            return position;
         }
     }
 }

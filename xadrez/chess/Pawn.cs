@@ -25,6 +25,23 @@ namespace chess
             return board.getPiece(pos) == null;
         }
 
+        // A pawn attacks both forward diagonals, even when they are empty
+        // (needed to know if the king may castle through a square).
+        public override bool[,] attackedSquares()
+        {
+            bool[,] mat = new bool[board.rows, board.columns];
+            int direction = (color == Color.White) ? -1 : 1;
+            foreach (int dc in new[] { -1, 1 })
+            {
+                Position pos = new Position(position.row + direction, position.column + dc);
+                if (board.positionExists(pos))
+                {
+                    mat[pos.row, pos.column] = true;
+                }
+            }
+            return mat;
+        }
+
         public override bool[,] possibleMoves()
         {
             bool[,] mat = new bool[board.rows, board.columns];
@@ -37,7 +54,8 @@ namespace chess
                     mat[pos.row, pos.column] = true;
                 }
                 pos.setValues(position.row - 2, position.column);
-                if (board.positionExists(pos) && isFree(pos) && moveCount == 0)
+                Position stepW = new Position(position.row - 1, position.column);
+                if (board.positionExists(pos) && isFree(pos) && isFree(stepW) && moveCount == 0)
                 {
                     mat[pos.row, pos.column] = true;
                 }
@@ -75,7 +93,8 @@ namespace chess
                     mat[pos.row, pos.column] = true;
                 }
                 pos.setValues(position.row + 2, position.column);
-                if (board.positionExists(pos) && isFree(pos) && moveCount == 0)
+                Position stepB = new Position(position.row + 1, position.column);
+                if (board.positionExists(pos) && isFree(pos) && isFree(stepB) && moveCount == 0)
                 {
                     mat[pos.row, pos.column] = true;
                 }
