@@ -15,10 +15,7 @@ internal class Program
                 try
                 {
                     Console.Clear();
-                    Screen.printBoard(match.board);
-                    Console.WriteLine();
-                    Console.WriteLine($"Turn: {match.turn}");
-                    Console.WriteLine($"Waiting for: {match.currentPlayer}");
+                    Screen.printMatch(match);
 
                     Console.WriteLine();
                     Console.Write("Origin: ");
