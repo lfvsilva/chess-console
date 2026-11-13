@@ -4,8 +4,10 @@ namespace chess
 {
     internal class Pawn : Piece
     {
-        public Pawn(Board board, Color color) : base(board, color)
+        private ChessMatch match;
+        public Pawn(Board board, Color color, ChessMatch match) : base(board, color)
         {
+            this.match = match;
         }
 
         public override string ToString()
@@ -49,6 +51,21 @@ namespace chess
                 {
                     mat[pos.row, pos.column] = true;
                 }
+
+                // # special move en passant
+                if(position.row == 3)
+                {
+                    Position left = new Position(position.row, position.column - 1);
+                    if (board.positionExists(left) && existsEnemy(left) && board.getPiece(left) == match.vulnerableEnPassant)
+                    {
+                        mat[left.row - 1, left.column] = true;
+                    }
+                    Position right = new Position(position.row, position.column + 1);
+                    if (board.positionExists(right) && existsEnemy(right) && board.getPiece(right) == match.vulnerableEnPassant)
+                    {
+                        mat[right.row - 1, right.column] = true;
+                    }
+                }
             }
             else
             {
@@ -71,6 +88,20 @@ namespace chess
                 if (board.positionExists(pos) && existsEnemy(pos))
                 {
                     mat[pos.row, pos.column] = true;
+                }
+                // # special move en passant
+                if (position.row == 4)
+                {
+                    Position left = new Position(position.row, position.column - 1);
+                    if (board.positionExists(left) && existsEnemy(left) && board.getPiece(left) == match.vulnerableEnPassant)
+                    {
+                        mat[left.row + 1, left.column] = true;
+                    }
+                    Position right = new Position(position.row, position.column + 1);
+                    if (board.positionExists(right) && existsEnemy(right) && board.getPiece(right) == match.vulnerableEnPassant)
+                    {
+                        mat[right.row + 1, right.column] = true;
+                    }
                 }
             }
             return mat;
