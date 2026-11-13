@@ -17,6 +17,10 @@ namespace xadrez
             Console.WriteLine($"Turn: {match.turn}");
             if (!match.finished)
             {
+                if(match.check)
+                {
+                    Console.WriteLine("CHECK!");
+                }
                 Console.WriteLine($"Waiting for player: {match.currentPlayer}");
             }
             else

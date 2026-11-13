@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using board;
 
@@ -14,6 +15,7 @@ namespace chess
         public bool finished { get; private set; }
         private HashSet<Piece> pieces;
         private HashSet<Piece> capturedPieces;
+        public bool check { get; private set; }
 
         public ChessMatch()
         {
@@ -23,12 +25,13 @@ namespace chess
             finished = false;
             pieces = new HashSet<Piece>();
             capturedPieces = new HashSet<Piece>();
+            check = false;
 
             placePieces();
 
         }
 
-        public void executeMove(Position origin, Position destination)
+        public Piece executeMove(Position origin, Position destination)
         {
             Piece p = board.removePiece(origin);
             p.increaseMoveCount();
@@ -39,11 +42,39 @@ namespace chess
             {
                 capturedPieces.Add(capturedPiece);
             }
+            return capturedPiece;
         }
 
-        public void executePlay(Position origin, Position destination)
+        public void UndoMove(Position origin, Position destination, Piece capturedPiece)
         {
-            executeMove(origin, destination);
+            Piece p = board.removePiece(destination);
+            p.decreaseMoveCount();
+            if (capturedPiece != null)
+            {
+                board.placePiece(capturedPiece, destination);
+                capturedPieces.Remove(capturedPiece);
+            }
+            board.placePiece(p, origin);
+        }
+
+        public void ExecutePlay(Position origin, Position destination)
+        {
+            Piece capturedPiece = executeMove(origin, destination);
+
+            if (isInCheck(currentPlayer))
+            {
+                UndoMove(origin, destination, capturedPiece);
+                throw new BoardException("You cannot put yourself in check!");
+            }
+
+            if (isInCheck(opponent(currentPlayer)))
+            {
+                check = true;
+            }
+            else
+            {
+                check = false;
+            }
             turn++;
             changePlayer();
 
@@ -104,6 +135,43 @@ namespace chess
             aux.ExceptWith(capturedPiecesByColor(color));
             return aux;
         }
+
+        private Color opponent(Color color)
+        {
+            return (color == Color.White) ? Color.Black : Color.White;
+        }
+
+        private Piece king(Color color)
+        {
+            foreach (Piece x in piecesInGameByColor(color))
+            {
+                if (x is King)
+                {
+                    return x;
+                }
+            }
+            return null;
+        }
+
+        public bool isInCheck(Color color)
+        {
+            Piece K = king(color);
+            if (K == null)
+            {
+                throw new BoardException($"There is no {color} king on the board!");
+            }
+            foreach (Piece x in piecesInGameByColor(opponent(color)))
+            {
+                bool[,] mat = x.possibleMoves();
+                if (mat[K.position.row, K.position.column])
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
 
         public void placeNewPiece(char column, int row, Piece piece)
         {

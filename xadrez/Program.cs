@@ -32,7 +32,7 @@ internal class Program
                     Position destination = Screen.readChessPosition().toPosition();
                     match.validateDestinationPosition(origin, destination);
 
-                    match.executePlay(origin, destination);
+                    match.ExecutePlay(origin, destination);
                 }
                 catch (BoardException e)
                 {
