@@ -8,8 +8,8 @@ namespace chess
     internal class ChessMatch
     {
         public Board board { get; private set; }
-        private int turn;
-        private Color currentPlayer;
+        public int turn { get; private set; }
+        public Color currentPlayer { get; private set; }
 
         public bool finished { get; private set; }
 
@@ -30,6 +30,43 @@ namespace chess
             Piece capturedPiece = board.removePiece(destination);
             p.position = destination;
             board.placePiece(p, destination);
+        }
+
+        public void executePlay(Position origin, Position destination)
+        {
+            executeMove(origin, destination);
+            turn++;
+            changePlayer();
+
+        }
+
+        public void validateOriginPosition(Position pos)
+        {
+            if (board.getPiece(pos) == null)
+            {
+                throw new BoardException("There is no piece in this position!");
+            }
+            if (currentPlayer != board.getPiece(pos).color)
+            {
+                throw new BoardException("The chosen piece is not yours!");
+            }
+            if (!board.getPiece(pos).isThereAnyPossibleMove())
+            {
+                throw new BoardException("There are no possible moves for the chosen piece!");
+            }
+        }
+
+        public void validateDestinationPosition(Position origin, Position destination)
+        {
+            if (!board.getPiece(origin).canMoveTo(destination))
+            {
+                throw new BoardException("Invalid destination position!");
+            }
+        }
+
+        private void changePlayer()
+        {
+            currentPlayer = (currentPlayer == Color.White) ? Color.Black : Color.White;
         }
 
         private void placePieces()

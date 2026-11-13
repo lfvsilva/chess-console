@@ -16,10 +16,14 @@ internal class Program
                 {
                     Console.Clear();
                     Screen.printBoard(match.board);
+                    Console.WriteLine();
+                    Console.WriteLine($"Turn: {match.turn}");
+                    Console.WriteLine($"Waiting for: {match.currentPlayer}");
 
                     Console.WriteLine();
                     Console.Write("Origin: ");
                     Position origin = Screen.readChessPosition().toPosition();
+                    match.validateOriginPosition(origin);
 
                     bool[,] possibleMoves = match.board.getPiece(origin).possibleMoves();
 
@@ -29,8 +33,9 @@ internal class Program
                     Console.WriteLine();
                     Console.Write("Destination: ");
                     Position destination = Screen.readChessPosition().toPosition();
+                    match.validateDestinationPosition(origin, destination);
 
-                    match.executeMove(origin, destination);
+                    match.executePlay(origin, destination);
                 }
                 catch (BoardException e)
                 {
