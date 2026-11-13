@@ -53,7 +53,7 @@ namespace chess
                 }
 
                 // # special move en passant
-                if(position.row == 3)
+                if (position.row == 3)
                 {
                     Position left = new Position(position.row, position.column - 1);
                     if (board.positionExists(left) && existsEnemy(left) && board.getPiece(left) == match.vulnerableEnPassant)
