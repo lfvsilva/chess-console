@@ -16,5 +16,10 @@ namespace board
             this.board = board;
             this.moveCount = 0;
         }
+
+        public void increaseMoveCount()
+        {
+            moveCount++;
+        }
     }
 }

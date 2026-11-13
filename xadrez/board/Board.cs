@@ -45,6 +45,18 @@ namespace board
             pieces[position.row, position.column] = piece;
         }
 
+        public Piece removePiece(Position position)
+        {
+            if (getPiece(position) == null)
+            {
+                return null;
+            }
+            Piece aux = getPiece(position);
+            aux.position = null;
+            pieces[position.row, position.column] = null;
+            return aux;
+        }
+
         public bool positionExists(Position position)
         {
             if (position.row < 0 || position.row >= rows || position.column < 0 || position.column >= columns)

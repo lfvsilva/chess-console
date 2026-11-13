@@ -5,15 +5,44 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        Board board = new Board(8, 8);
 
-        board.placePiece(new Rook(board, Color.White), new Position(0, 0));
-        board.placePiece(new Rook(board, Color.White), new Position(1, 3));
-        board.placePiece(new Rook(board, Color.White), new Position(0, 2));
+        try
+        {
+            ChessMatch match = new ChessMatch();
 
-        board.placePiece(new Rook(board, Color.Black), new Position(3, 5));
+            while (!match.finished)
+            {
+                try
+                {
+                    Console.Clear();
+                    Screen.printBoard(match.board);
 
-        Screen.printBoard(board);
+                    Console.WriteLine();
+                    Console.Write("Origin: ");
+                    Position origin = Screen.readChessPosition().toPosition();
+
+                    
+                    Console.Write("Destination: ");
+                    Position destination = Screen.readChessPosition().toPosition();
+
+                    match.executeMove(origin, destination);
+                }
+                catch (BoardException e)
+                {
+                    Console.WriteLine(e.Message);
+                    Console.ReadLine();
+                }
+            }
+
+            Screen.printBoard(match.board);
+        }
+        catch (BoardException e)
+        {
+
+            Console.WriteLine( e.Message); 
+        }
+
+        
 
         Console.ReadLine();
         
