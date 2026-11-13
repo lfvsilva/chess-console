@@ -40,8 +40,8 @@ internal class Program
                     Console.ReadLine();
                 }
             }
-
-            Screen.printBoard(match.board);
+            Console.Clear();
+            Screen.printMatch(match);
         }
         catch (BoardException e)
         {
